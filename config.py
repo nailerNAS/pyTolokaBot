@@ -17,3 +17,4 @@ if USE_WEBHOOK:
     WEBHOOK_URL = f'https://{WEBHOOK_HOST}:{WEBHOOK_PORT}{WEBHOOK_PATH}'
 
 COOKIES = get('COOKIES')
+CHANNEL = get('CHANNEL', converter=int)
