@@ -1,8 +1,9 @@
 import asyncio
+import re
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardMarkup, \
-    InlineKeyboardButton
+    InlineKeyboardButton, InputFile
 
 import config
 from toloka import api
@@ -11,6 +12,8 @@ loop = asyncio.get_event_loop()
 
 bot = Bot(config.TOKEN, loop)
 dp = Dispatcher(bot, loop)
+
+link_pattern = re.compile(r'\.torrent (?P<link>https:\/\/toloka\.to\/(?P<id>t\d+$))')
 
 
 @dp.inline_handler(lambda q: q.query and not q.query.startswith('.torrent '))
@@ -63,3 +66,29 @@ async def inline_search(query: InlineQuery):
         inline_results.append(article)
 
     await query.answer(inline_results)
+
+
+@dp.inline_handler(lambda q: q.query and q.query.startswith('.torrent '))
+async def inline_torrent(query: InlineQuery):
+    match = link_pattern.match(query.query)
+    if not match:
+        return
+
+    link = match.group('link')
+    id = match.group('id')
+    filename = f'{id}.torrent'
+
+    torrent_fs = await api.get_torrent_fs(link)
+    torrent_fs.name = filename
+
+    sent = await bot.send_document(config.CHANNEL, InputFile(torrent_fs))
+    file_id = sent.document.file_id
+
+    content = InputTextMessageContent(message_text=link,
+                                      disable_web_page_preview=True)
+    article = InlineQueryResultArticle(id='1',
+                                       title=link,
+                                       input_message_content=content,
+                                       description=filename)
+
+    await query.answer([article])
