@@ -15,7 +15,7 @@ async def search_request(search: str) -> List[TolokaResult]:
         raise ValueError('Search query is empty')
 
     async with ClientSession() as cs:
-        params = {'search', search}
+        params = {'search': search}
         async with cs.get(API_BASE, params=params) as r:
             results_dict = await r.json()
 
