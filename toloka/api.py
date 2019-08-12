@@ -10,10 +10,15 @@ from .toloka_result import TolokaResult
 
 API_BASE = 'https://toloka.to/api.php'
 
+COOKIES = {}
+
 
 def get_cookies() -> dict:
-    with open(config.COOKIES, 'rt') as file:
-        return json.loads(file.read())
+    if not COOKIES:
+        with open(config.COOKIES, 'rt') as file:
+            COOKIES.update(json.loads(file.read()))
+
+    return COOKIES
 
 
 async def search_request(search: str) -> List[TolokaResult]:
