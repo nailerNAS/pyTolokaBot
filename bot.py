@@ -2,8 +2,11 @@ import asyncio
 import re
 
 from aiogram import Bot, Dispatcher
+from aiogram.dispatcher.webhook import get_new_configured_app
 from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardMarkup, \
     InlineKeyboardButton, InputFile
+from aiogram.utils.executor import start_polling
+from aiohttp.web import run_app
 
 import config
 from toloka import api
@@ -101,3 +104,24 @@ async def on_startup(*args, **kwargs):
 
 async def on_shutdown(*args, **kwargs):
     await bot.delete_webhook()
+
+
+def main():
+    if config.USE_WEBHOOK:
+        app = get_new_configured_app(dp, config.WEBHOOK_PATH)
+
+        app.on_startup.append(on_startup)
+        app.on_shutdown.append(on_shutdown)
+
+        run_app(app, port=config.WEBHOOK_PORT)
+
+    else:
+        try:
+            start_polling(dp, loop=loop, skip_updates=True)
+        except KeyboardInterrupt:
+            print('goodbye')
+            dp.stop_polling()
+
+
+if __name__ == '__main__':
+    main()
