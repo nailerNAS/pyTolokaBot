@@ -113,7 +113,7 @@ def main():
         app.on_startup.append(on_startup)
         app.on_shutdown.append(on_shutdown)
 
-        run_app(app, port=config.WEBHOOK_PORT)
+        run_app(app, port=config.WEBHOOK_LOCAL_PORT)
 
     else:
         try:
