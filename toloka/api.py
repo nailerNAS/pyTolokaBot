@@ -1,5 +1,4 @@
 import io
-import json
 from typing import List
 
 from aiohttp import ClientSession
@@ -9,16 +8,6 @@ import config
 from .toloka_result import TolokaResult
 
 API_BASE = 'https://toloka.to/api.php'
-
-COOKIES = {}
-
-
-def get_cookies() -> dict:
-    if not COOKIES:
-        with open(config.COOKIES, 'rt') as file:
-            COOKIES.update(json.loads(file.read()))
-
-    return COOKIES
 
 
 async def search_request(search: str) -> List[TolokaResult]:
@@ -34,8 +23,7 @@ async def search_request(search: str) -> List[TolokaResult]:
 
 
 async def get_torrent_fs(link: str) -> io.BytesIO:
-    cookies = get_cookies()
-    async with ClientSession(cookies=cookies) as cs:
+    async with ClientSession(cookies=config.COOKIES) as cs:
         async with cs.get(link) as r:
             html = await r.text()
 

@@ -1,4 +1,9 @@
+import json
 from os import getenv
+
+
+def cookies_converter(s: str) -> dict:
+    return json.loads(s)
 
 
 def get(key, default=None, converter=None):
@@ -16,5 +21,5 @@ if USE_WEBHOOK:
     WEBHOOK_PATH = get('WEBHOOK_PATH')
     WEBHOOK_URL = f'https://{WEBHOOK_HOST}:{WEBHOOK_PORT}{WEBHOOK_PATH}'
 
-COOKIES = get('COOKIES')
+COOKIES = get('COOKIES', converter=cookies_converter)
 CHANNEL = get('CHANNEL', converter=int)
