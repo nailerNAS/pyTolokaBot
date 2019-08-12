@@ -92,3 +92,12 @@ async def inline_torrent(query: InlineQuery):
                                        description=filename)
 
     await query.answer([article])
+
+
+async def on_startup(*args, **kwargs):
+    await bot.delete_webhook()
+    await bot.set_webhook(config.WEBHOOK_URL)
+
+
+async def on_shutdown(*args, **kwargs):
+    await bot.delete_webhook()
