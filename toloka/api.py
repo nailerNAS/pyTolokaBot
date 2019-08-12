@@ -28,8 +28,11 @@ async def get_torrent_fs(link: str) -> io.BytesIO:
             html = await r.text()
 
         bs = BeautifulSoup(html, 'html.parser')
-        tag: Tag = bs.find('a', text='Завантажити')
-        href = tag.attrs['href']
+        tags: List[Tag] = bs.find_all('a')
+        for tag in tags:
+            if tag.text.lower().startswith('завантажити'):
+                href = tag.attrs['href']
+                break
 
         download_link = f'https://toloka.to/{href}'
 

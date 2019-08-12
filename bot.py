@@ -4,7 +4,7 @@ import re
 from aiogram import Bot, Dispatcher
 from aiogram.dispatcher.webhook import get_new_configured_app
 from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardMarkup, \
-    InlineKeyboardButton, InputFile
+    InlineKeyboardButton, InputFile, InlineQueryResultCachedDocument
 from aiogram.utils.executor import start_polling
 from aiohttp.web import run_app
 
@@ -87,14 +87,13 @@ async def inline_torrent(query: InlineQuery):
     sent = await bot.send_document(config.CHANNEL, InputFile(torrent_fs))
     file_id = sent.document.file_id
 
-    content = InputTextMessageContent(message_text=link,
-                                      disable_web_page_preview=True)
-    article = InlineQueryResultArticle(id='1',
-                                       title=link,
-                                       input_message_content=content,
-                                       description=filename)
+    document = InlineQueryResultCachedDocument(id='1',
+                                               title=link,
+                                               document_file_id=file_id,
+                                               description=filename,
+                                               caption=link)
 
-    await query.answer([article])
+    await query.answer([document])
 
 
 async def on_startup(*args, **kwargs):
