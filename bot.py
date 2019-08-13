@@ -1,5 +1,6 @@
 import asyncio
 import re
+import ssl
 
 from aiogram import Bot, Dispatcher
 from aiogram.dispatcher.webhook import get_new_configured_app
@@ -98,7 +99,12 @@ async def inline_torrent(query: InlineQuery):
 
 async def on_startup(*args, **kwargs):
     await bot.delete_webhook()
-    await bot.set_webhook(config.WEBHOOK_URL)
+    if config.CUSTOM_SSL_CERT:
+        with open(config.SSL_CERT, 'rb') as file:
+            cert = InputFile(file)
+            await bot.set_webhook(config.WEBHOOK_URL, cert)
+    else:
+        await bot.set_webhook(config.WEBHOOK_URL)
 
 
 async def on_shutdown(*args, **kwargs):
@@ -112,7 +118,12 @@ def main():
         app.on_startup.append(on_startup)
         app.on_shutdown.append(on_shutdown)
 
-        run_app(app, port=config.WEBHOOK_LOCAL_PORT)
+        context = None
+        if config.CUSTOM_SSL_CERT:
+            context = ssl.SSLContext()
+            context.load_cert_chain(config.SSL_CERT, config.SSL_PRIV)
+
+        run_app(app, port=config.WEBHOOK_LOCAL_PORT, ssl_context=context)
 
     else:
         try:
