@@ -1,4 +1,4 @@
-from . import api
+from . import api, errors
 from .toloka_result import TolokaResult
 
-__all__ = ['api', 'TolokaResult']
+__all__ = ['api', 'errors', 'TolokaResult']

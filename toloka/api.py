@@ -5,6 +5,7 @@ from aiohttp import ClientSession
 from bs4 import BeautifulSoup, Tag
 
 import config
+from . import errors
 from .toloka_result import TolokaResult
 
 API_BASE = 'https://toloka.to/api.php'
@@ -28,11 +29,12 @@ async def get_torrent_fs(link: str) -> io.BytesIO:
             html = await r.text()
 
         bs = BeautifulSoup(html, 'html.parser')
-        tags: List[Tag] = bs.find_all('a')
-        for tag in tags:
-            if tag.text.lower().startswith('завантажити'):
-                href = tag.attrs['href']
-                break
+        tag: Tag = bs.find('a', text='Завантажити')
+
+        if not tag:
+            raise errors.UnlogException
+
+        href = tag.attrs['href']
 
         download_link = f'https://toloka.to/{href}'
 

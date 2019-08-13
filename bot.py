@@ -10,7 +10,7 @@ from aiogram.utils.executor import start_polling
 from aiohttp.web import run_app
 
 import config
-from toloka import api
+from toloka import api, errors
 
 loop = asyncio.get_event_loop()
 
@@ -18,6 +18,13 @@ bot = Bot(config.TOKEN, loop)
 dp = Dispatcher(bot, loop)
 
 link_pattern = re.compile(r'\.torrent (?P<link>https:\/\/toloka\.to\/(?P<id>t\d+$))')
+
+
+async def notify_error(text: str):
+    report = await bot.send_message(config.CHANNEL,
+                                    text,
+                                    disable_notification=False)
+    await report.pin(disable_notification=False)
 
 
 @dp.inline_handler(lambda q: q.query and not q.query.startswith('.torrent '))
@@ -82,7 +89,14 @@ async def inline_torrent(query: InlineQuery):
     id = match.group('id')
     filename = f'{id}.torrent'
 
-    torrent_fs = await api.get_torrent_fs(link)
+    torrent_fs = None
+
+    try:
+        torrent_fs = await api.get_torrent_fs(link)
+    except errors.UnlogException:
+        await notify_error('Unlog error, time to change cookies')
+        return
+
     torrent_fs.name = filename
 
     sent = await bot.send_document(config.CHANNEL, InputFile(torrent_fs))
