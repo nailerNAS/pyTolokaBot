@@ -23,7 +23,9 @@ CUSTOM_SSL_CERT = get('CUSTOM_SSL_CERT', False, bool)
 SSL_CERT = get('SSL_CERT')
 SSL_PRIV = get('SSL_PRIV')
 
-COOKIES = get('COOKIES', converter=cookies_converter)
 CHANNEL = get('CHANNEL', converter=int)
 
 HEROKU = get('HEROKU', False, bool)
+
+TOLOKA_USERNAME = get('TOLOKA_USERNAME')
+TOLOKA_PASSWORD = get('TOLOKA_PASSWORD')

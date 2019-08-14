@@ -1,2 +1,0 @@
-class UnlogException(Exception):
-    pass

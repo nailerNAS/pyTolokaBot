@@ -1,14 +1,27 @@
 import io
 from typing import List
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, FormData
 from bs4 import BeautifulSoup, Tag
 
 import config
-from . import errors
 from .toloka_result import TolokaResult
 
 API_BASE = 'https://toloka.to/api.php'
+
+
+async def login(cs: ClientSession) -> ClientSession:
+    form = FormData()
+    form.add_field('username', config.TOLOKA_USERNAME)
+    form.add_field('password', config.TOLOKA_PASSWORD)
+    form.add_field('autologin', 'on')
+    form.add_field('ssl', 'on')
+    form.add_field('redirect', 'index.php?')
+    form.add_field('login', 'Вхід')
+
+    await cs.post('https://toloka.to/login.php', data=form)
+
+    return cs
 
 
 async def search_request(search: str) -> List[TolokaResult]:
@@ -24,15 +37,14 @@ async def search_request(search: str) -> List[TolokaResult]:
 
 
 async def get_torrent_fs(link: str) -> io.BytesIO:
-    async with ClientSession(cookies=config.COOKIES) as cs:
+    async with ClientSession() as cs:
+        await login(cs)
+
         async with cs.get(link) as r:
             html = await r.text()
 
         bs = BeautifulSoup(html, 'html.parser')
         tag: Tag = bs.find('a', text='Завантажити')
-
-        if not tag:
-            raise errors.UnlogException
 
         href = tag.attrs['href']
 
