@@ -5,12 +5,12 @@ import ssl
 from aiogram import Bot, Dispatcher
 from aiogram.dispatcher.webhook import get_new_configured_app
 from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardMarkup, \
-    InlineKeyboardButton, InputFile, InlineQueryResultCachedDocument
+    InlineKeyboardButton, InputFile, InlineQueryResultCachedDocument, ParseMode
 from aiogram.utils.executor import start_polling
 from aiohttp.web import run_app
 
 import config
-from toloka import api
+from toloka import api, TolokaResult
 
 loop = asyncio.get_event_loop()
 
@@ -18,6 +18,16 @@ bot = Bot(config.TOKEN, loop)
 dp = Dispatcher(bot, loop)
 
 link_pattern = re.compile(r'\.torrent (?P<link>https:\/\/toloka\.to\/(?P<id>t\d+$))')
+
+
+def prepare_result(result: TolokaResult) -> str:
+    return f'*Назва:* {result.title}\n' \
+           f'*Посилання:* {result.link}\n' \
+           f'*Форум:* {result.forum_name}. {result.forum_parent}\n' \
+           f'*Розмір:* {result.size}\n' \
+           f'*Роздають:* {result.seeders}\n' \
+           f'*Завантажують:* {result.leechers}\n' \
+           f'*Завантажили:* {result.complete}'
 
 
 @dp.inline_handler(lambda q: q.query and not q.query.startswith('.torrent '))
@@ -35,21 +45,13 @@ async def inline_search(query: InlineQuery):
         markup = InlineKeyboardMarkup()
         markup.insert(button)
 
-        text = f'ID: {toloka_result.id}\n' \
-               f'Link: {toloka_result.link}\n' \
-               f'Title: {toloka_result.title}\n' \
-               f'Forum name: {toloka_result.forum_name}\n' \
-               f'Forum parent: {toloka_result.forum_parent}\n' \
-               f'Comments: {toloka_result.comments}\n' \
-               f'Size: {toloka_result.size}\n' \
-               f'Seeders: {toloka_result.seeders}\n' \
-               f'Leechers: {toloka_result.leechers}\n' \
-               f'Complete: {toloka_result.complete}'
+        text = prepare_result(toloka_result)
 
         description = f'S: {toloka_result.seeders} | L: {toloka_result.leechers} | C: {toloka_result.complete}'
 
         content = InputTextMessageContent(message_text=text,
-                                          disable_web_page_preview=True)
+                                          disable_web_page_preview=True,
+                                          parse_mode=ParseMode.MARKDOWN)
 
         article = InlineQueryResultArticle(id=str(n),
                                            title=toloka_result.title,
