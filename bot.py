@@ -130,7 +130,8 @@ def main():
         app = get_new_configured_app(dp, config.WEBHOOK_PATH)
 
         app.on_startup.append(on_startup)
-        app.on_shutdown.append(on_shutdown)
+        if not config.HEROKU:
+            app.on_shutdown.append(on_shutdown)
 
         context = None
         if config.CUSTOM_SSL_CERT:

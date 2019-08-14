@@ -25,3 +25,5 @@ SSL_PRIV = get('SSL_PRIV')
 
 COOKIES = get('COOKIES', converter=cookies_converter)
 CHANNEL = get('CHANNEL', converter=int)
+
+HEROKU = get('HEROKU', False, bool)
