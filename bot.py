@@ -100,6 +100,8 @@ async def inline_torrent(query: InlineQuery):
 
 
 async def on_startup(*args, **kwargs):
+    await api.login()
+
     await bot.delete_webhook()
     if config.CUSTOM_SSL_CERT:
         with open(config.SSL_CERT, 'rb') as file:
@@ -129,8 +131,11 @@ def main():
         run_app(app, port=config.WEBHOOK_LOCAL_PORT, ssl_context=context)
 
     else:
+        async def proxy_login(*args, **kwargs):
+            await api.login()
+
         try:
-            start_polling(dp, loop=loop, skip_updates=True)
+            start_polling(dp, loop=loop, skip_updates=True, on_startup=proxy_login)
         except KeyboardInterrupt:
             print('goodbye')
             dp.stop_polling()
