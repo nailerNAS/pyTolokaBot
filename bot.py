@@ -97,6 +97,7 @@ async def inline_torrent(query: InlineQuery):
                                                caption=link)
 
     await query.answer([document])
+    torrent_fs.close()
 
 
 async def on_startup(*args, **kwargs):
