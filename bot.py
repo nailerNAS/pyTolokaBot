@@ -47,7 +47,7 @@ async def inline_search(query: InlineQuery):
 
         text = prepare_result(toloka_result)
 
-        description = f'S: {toloka_result.seeders} | L: {toloka_result.leechers} | C: {toloka_result.complete}'
+        description = f'{toloka_result.size}|{toloka_result.seeders}/{toloka_result.leechers}'
 
         content = InputTextMessageContent(message_text=text,
                                           disable_web_page_preview=True,
